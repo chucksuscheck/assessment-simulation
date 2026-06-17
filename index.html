@@ -13,24 +13,14 @@
   <!-- ===== HEADER ===== -->
   <header class="app-header">
     <div class="app-title">Assessment <span>Simulation</span></div>
-    <button class="btn-upload" id="btn-upload-trigger">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="17 8 12 3 7 8"/>
-        <line x1="12" y1="3" x2="12" y2="15"/>
-      </svg>
-      Load CSV
-    </button>
-    <input type="file" id="csv-file-input" accept=".csv">
   </header>
 
   <!-- ===== EMPTY STATE ===== -->
   <div id="screen-empty" class="screen active">
     <div class="empty-state">
       <div class="empty-icon">📋</div>
-      <h2>No Question Bank Loaded</h2>
-      <p>Place <code>all_questions.csv</code> next to <code>index.html</code> and serve locally, or upload a CSV file manually.</p>
-      <button class="btn-load-sample" id="btn-upload-trigger-empty">Upload CSV File</button>
+      <h2>Question Bank Not Found</h2>
+      <p><code>all_questions.csv</code> could not be loaded. Make sure the file is in the same directory as <code>index.html</code> and the app is served over HTTP.</p>
     </div>
   </div>
 

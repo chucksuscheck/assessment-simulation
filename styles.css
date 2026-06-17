@@ -58,22 +58,7 @@ body {
 
 .app-title span { color: var(--text-muted); font-weight: 400; }
 
-.btn-upload {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--text);
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
 
-.btn-upload:hover { border-color: var(--accent); box-shadow: var(--shadow); }
-#csv-file-input { display: none; }
 
 /* ===== CARD ===== */
 .card {
@@ -773,19 +758,7 @@ body {
   font-size: 0.9rem;
 }
 
-.btn-load-sample {
-  padding: 10px 20px;
-  background: var(--accent);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-}
 
-.btn-load-sample:hover { background: var(--accent-hover); }
 
 /* Toast */
 .toast {

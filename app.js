@@ -609,19 +609,6 @@ function escapeHtml(str) {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // CSV file input
-  $('csv-file-input').addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => handleCSVText(ev.target.result, file.name);
-    reader.readAsText(file);
-    e.target.value = ''; // reset so same file can be re-selected
-  });
-
-  $('btn-upload-trigger').addEventListener('click', () => $('csv-file-input').click());
-  $('btn-upload-trigger-empty').addEventListener('click', () => $('csv-file-input').click());
-
   // Question count radios
   $('question-count-group').addEventListener('change', e => {
     if (e.target.name === 'question-count') {
