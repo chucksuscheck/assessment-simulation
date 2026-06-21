@@ -545,6 +545,7 @@ function renderResults() {
           <div class="breakdown-bar-wrap">
             <div class="breakdown-bar-fill" style="width:${catPct}%; background:${color}"></div>
           </div>
+          <span class="breakdown-counts">${correct}/${total}</span>
           <span class="breakdown-pct" style="color:${color}">${catPct}%</span>
         </div>
       `);
@@ -666,6 +667,18 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btn-retry-wrong').addEventListener('click', retryWrongQuestions);
   $('btn-show-wrong').addEventListener('click', showWrongQuestions);
   $('btn-back-results').addEventListener('click', () => showScreen('screen-results'));
+
+  // Enter key triggers Submit or Next
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (!$('screen-quiz').classList.contains('active')) return;
+
+    if (!state.answered && state.selectedAnswers.size > 0) {
+      submitAnswer();
+    } else if (state.answered) {
+      nextQuestion();
+    }
+  });
 
   // Auto-load
   tryAutoLoad();
