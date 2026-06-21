@@ -181,10 +181,46 @@ function shuffle(arr) {
 }
 
 function buildActiveQuestions() {
-  let qs = state.allQuestions.filter(q => q.parentCategory === state.selectedParentCategory);
-  qs = shuffle(qs);
-  if (qs.length > state.questionCount) qs = qs.slice(0, state.questionCount);
-  state.activeQuestions = qs;
+  const pool = state.allQuestions.filter(q => q.parentCategory === state.selectedParentCategory);
+  const target = Math.min(state.questionCount, pool.length);
+
+  // Group by (category, type) for stratified sampling
+  const strata = new Map();
+  for (const q of pool) {
+    const key = q.category + '\0' + q.type;
+    if (!strata.has(key)) strata.set(key, []);
+    strata.get(key).push(q);
+  }
+
+  // Allocate counts proportionally, then distribute remainders by largest fraction
+  const entries = [...strata.entries()].map(([key, items]) => ({
+    key,
+    items: shuffle(items),
+    proportion: items.length / pool.length,
+  }));
+
+  let allocated = 0;
+  for (const e of entries) {
+    e.count = Math.floor(e.proportion * target);
+    e.remainder = (e.proportion * target) - e.count;
+    allocated += e.count;
+  }
+
+  let remaining = target - allocated;
+  entries.sort((a, b) => b.remainder - a.remainder);
+  for (const e of entries) {
+    if (remaining <= 0) break;
+    e.count++;
+    remaining--;
+  }
+
+  // Sample from each stratum
+  const selected = [];
+  for (const e of entries) {
+    selected.push(...e.items.slice(0, e.count));
+  }
+
+  state.activeQuestions = shuffle(selected);
 }
 
 function checkAnswer() {
@@ -264,10 +300,7 @@ function renderInfoLists() {
   const typeOrder = ['multiplechoice', 'multipleresponse', 'truefalse'];
   const typeParts = typeOrder
     .filter(t => qs.some(q => q.type === t))
-    .map(t => {
-      const count = qs.filter(q => q.type === t).length;
-      return `${typeLabels[t]} (${count})`;
-    });
+    .map(t => typeLabels[t]);
   $('question-types-list').textContent = typeParts.join('  ·  ');
 
   // Subcategories — compact comma list
@@ -518,37 +551,35 @@ function renderResults() {
     });
 
   $('btn-retry-wrong').disabled = state.wrongQuestions.length === 0;
+  $('btn-show-wrong').disabled = state.wrongQuestions.length === 0;
 
-  // Wrong answers review
-  const reviewSection = $('review-section');
+  showScreen('screen-results');
+}
+
+function showWrongQuestions() {
   const reviewList = $('review-list');
   reviewList.innerHTML = '';
 
-  if (state.wrongDetails.length === 0) {
-    reviewSection.style.display = 'none';
-  } else {
-    $('review-heading').textContent = `Incorrect Answers (${state.wrongDetails.length})`;
-    reviewSection.style.display = 'block';
+  $('review-heading').textContent = `Incorrect Answers (${state.wrongDetails.length})`;
 
-    state.wrongDetails.forEach((detail, idx) => {
-      const { question: q, correctAnswers } = detail;
-      const item = document.createElement('div');
-      item.className = 'review-item';
+  state.wrongDetails.forEach((detail, idx) => {
+    const { question: q, correctAnswers } = detail;
+    const item = document.createElement('div');
+    item.className = 'review-item';
 
-      const correctHtml = correctAnswers
-        .map(a => `<div class="review-correct-ans">✓ ${escapeHtml(a)}</div>`)
-        .join('');
+    const correctHtml = correctAnswers
+      .map(a => `<div class="review-correct-ans">✓ ${escapeHtml(a)}</div>`)
+      .join('');
 
-      item.innerHTML = `
-        <div class="review-q"><span class="review-q-num">${idx + 1}.</span>${escapeHtml(q.question)}</div>
-        <div class="review-correct-answers">${correctHtml}</div>
-        <div class="review-explanation">${escapeHtml(q.incorrectFeedback || '')}</div>
-      `;
-      reviewList.appendChild(item);
-    });
-  }
+    item.innerHTML = `
+      <div class="review-q"><span class="review-q-num">${idx + 1}.</span>${escapeHtml(q.question)}</div>
+      <div class="review-correct-answers">${correctHtml}</div>
+      <div class="review-explanation">${escapeHtml(q.incorrectFeedback || '')}</div>
+    `;
+    reviewList.appendChild(item);
+  });
 
-  showScreen('screen-results');
+  showScreen('screen-wrong');
 }
 
 function retryWrongQuestions() {
@@ -633,6 +664,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Results actions
   $('btn-restart').addEventListener('click', () => renderStartScreen());
   $('btn-retry-wrong').addEventListener('click', retryWrongQuestions);
+  $('btn-show-wrong').addEventListener('click', showWrongQuestions);
+  $('btn-back-results').addEventListener('click', () => showScreen('screen-results'));
 
   // Auto-load
   tryAutoLoad();

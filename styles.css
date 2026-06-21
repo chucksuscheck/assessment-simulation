@@ -713,7 +713,7 @@ body {
   flex-wrap: wrap;
 }
 
-.btn-restart, .btn-retry-wrong {
+.btn-restart, .btn-retry-wrong, .btn-show-wrong {
   flex: 1;
   min-width: 120px;
   padding: 12px;
@@ -736,6 +736,15 @@ body {
 
 .btn-retry-wrong:hover { border-color: var(--accent); color: var(--accent); }
 .btn-retry-wrong:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-show-wrong {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text);
+}
+
+.btn-show-wrong:hover { border-color: var(--accent); color: var(--accent); }
+.btn-show-wrong:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* ===== EMPTY / LOADING STATE ===== */
 .empty-state {

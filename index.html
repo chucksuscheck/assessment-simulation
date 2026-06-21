@@ -150,15 +150,21 @@
       <div class="results-actions">
         <button class="btn-restart" id="btn-restart">← New Assessment</button>
         <button class="btn-retry-wrong" id="btn-retry-wrong">Retry Wrong Answers</button>
-      </div>
-
-      <!-- Incorrect answers review -->
-      <div class="review-section" id="review-section" style="display:none">
-        <h3 id="review-heading">Incorrect Answers</h3>
-        <div id="review-list"></div>
+        <button class="btn-show-wrong" id="btn-show-wrong">Show Wrong Questions</button>
       </div>
     </div>
 
+  </div>
+
+  <!-- ===== WRONG ANSWERS SCREEN ===== -->
+  <div id="screen-wrong" class="screen">
+    <div class="card">
+      <h3 id="review-heading">Incorrect Answers</h3>
+      <div id="review-list"></div>
+      <div class="results-actions" style="margin-top:24px">
+        <button class="btn-restart" id="btn-back-results">← Back to Results</button>
+      </div>
+    </div>
   </div>
 
 </div>
