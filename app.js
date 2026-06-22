@@ -1,176 +1,26 @@
-// ===== CSV PARSER =====
+// ===== UTILITIES =====
 
-function parseCSV(text) {
-  const rows = [];
-  const src = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  let i = 0;
+function $(id) { return document.getElementById(id); }
 
-  while (i < src.length) {
-    const row = [];
-    let rowHasContent = false;
-
-    while (i < src.length && src[i] !== '\n') {
-      let field = '';
-      if (src[i] === '"') {
-        i++; // skip opening quote
-        while (i < src.length) {
-          if (src[i] === '"' && src[i + 1] === '"') {
-            field += '"';
-            i += 2;
-          } else if (src[i] === '"') {
-            i++; // skip closing quote
-            break;
-          } else {
-            field += src[i++];
-          }
-        }
-      } else {
-        while (i < src.length && src[i] !== ',' && src[i] !== '\n') {
-          field += src[i++];
-        }
-        field = field.trim();
-      }
-      row.push(field);
-      if (field !== '') rowHasContent = true;
-      if (src[i] === ',') i++;
-    }
-
-    if (src[i] === '\n') i++;
-    if (rowHasContent) rows.push(row);
-  }
-
-  return rows;
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
-// ===== QUESTION PARSER =====
-
-function parseQuizCSV(text) {
-  const rows = parseCSV(text);
-  const questions = [];
-  let currentType = null;
-
-  for (const row of rows) {
-    const firstCell = row[0] || '';
-
-    if (firstCell.startsWith('Question Type:')) {
-      currentType = firstCell.replace('Question Type:', '').trim().toLowerCase();
-      continue;
-    }
-
-    if (currentType) {
-      const q = parseQuestionRow(row, currentType);
-      if (q) questions.push(q);
-    }
-  }
-
-  return questions;
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
 }
 
-function parseQuestionRow(row, type) {
-  let parentCategory, category, points, question, correctRaw, correctFeedback, incorrectFeedback, randomAnswers;
-  let answerStart;
-
-  try {
-    if (type === 'multipleresponse') {
-      // cols: [type, parentCat, cat, randomAnswers, gradeStyle, correctFeedback, incorrectFeedback, points, question, correct, A..J]
-      parentCategory = row[1] || '';
-      category = row[2] || '';
-      randomAnswers = (row[3] || '').toLowerCase() === 'yes';
-      correctFeedback = row[5] || '';
-      incorrectFeedback = row[6] || '';
-      points = parseInt(row[7]) || 1;
-      question = row[8] || '';
-      correctRaw = row[9] || '';
-      answerStart = 10;
-    } else if (type === 'multiplechoice') {
-      // cols: [type, parentCat, cat, randomAnswers, correctFeedback, incorrectFeedback, points, question, correct, A..J]
-      parentCategory = row[1] || '';
-      category = row[2] || '';
-      randomAnswers = (row[3] || '').toLowerCase() === 'yes';
-      correctFeedback = row[4] || '';
-      incorrectFeedback = row[5] || '';
-      points = parseInt(row[6]) || 1;
-      question = row[7] || '';
-      correctRaw = row[8] || '';
-      answerStart = 9;
-    } else if (type === 'truefalse') {
-      // cols: [type, parentCat, cat, correctFeedback, incorrectFeedback, points, question, correct, A, B]
-      parentCategory = row[1] || '';
-      category = row[2] || '';
-      randomAnswers = false;
-      correctFeedback = row[3] || '';
-      incorrectFeedback = row[4] || '';
-      points = parseInt(row[5]) || 1;
-      question = row[6] || '';
-      correctRaw = row[7] || '';
-      answerStart = 8;
-    } else {
-      return null;
-    }
-  } catch {
-    return null;
-  }
-
-  if (!question.trim()) return null;
-
-  // Build answer list (A–J), skip empty
-  const letters = ['A','B','C','D','E','F','G','H','I','J'];
-  const answers = [];
-  for (let i = 0; i < 10; i++) {
-    const text = (row[answerStart + i] || '').trim();
-    if (text) answers.push({ letter: letters[i], text });
-  }
-
-  if (answers.length === 0) return null;
-
-  // Correct answers as array of letters
-  const correctLetters = correctRaw
-    .split(',')
-    .map(s => s.trim().toUpperCase())
-    .filter(s => /^[A-J]$/.test(s));
-
-  if (correctLetters.length === 0) return null;
-
-  // Correct answer texts for comparison
-  const correctTexts = new Set(
-    correctLetters
-      .map(l => answers.find(a => a.letter === l)?.text)
-      .filter(Boolean)
-  );
-
-  return {
-    type,
-    parentCategory,
-    category,
-    points,
-    question: question.trim(),
-    answers,
-    correctLetters,
-    correctTexts,
-    correctFeedback: correctFeedback.trim(),
-    incorrectFeedback: incorrectFeedback.trim(),
-    randomAnswers,
-  };
+function showToast(msg, duration = 2500) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), duration);
 }
-
-// ===== STATE =====
-
-const state = {
-  allQuestions: [],
-  activeQuestions: [],
-  currentIndex: 0,
-  score: 0,
-  wrongQuestions: [],
-  wrongDetails: [],
-  selectedAnswers: new Set(),
-  answered: false,
-  selectedParentCategory: '',
-  questionCount: 15,
-  displayedAnswers: [],
-  answerLog: [],
-};
-
-// ===== QUIZ LOGIC =====
 
 function shuffle(arr) {
   const a = [...arr];
@@ -181,11 +31,45 @@ function shuffle(arr) {
   return a;
 }
 
+function setsEqual(a, b) {
+  if (a.size !== b.size) return false;
+  for (const v of a) if (!b.has(v)) return false;
+  return true;
+}
+
+// ===== STATE =====
+
+const PASS_THRESHOLD = 85;
+
+const state = {
+  allQuestions: [],
+  activeQuestions: [],
+  currentIndex: 0,
+  score: 0,
+  answerLog: [],       // { question, userSelections, correctAnswers, isCorrect } per question
+  selectedAnswers: new Set(),
+  displayedAnswers: [],
+  answered: false,
+  selectedParentCategory: '',
+  questionCount: 15,
+};
+
+function resetQuizState(questions) {
+  state.activeQuestions = questions;
+  state.currentIndex = 0;
+  state.score = 0;
+  state.answerLog = [];
+  state.selectedAnswers = new Set();
+  state.answered = false;
+}
+
+// ===== QUIZ LOGIC =====
+
 function buildActiveQuestions() {
   const pool = state.allQuestions.filter(q => q.parentCategory === state.selectedParentCategory);
   const target = Math.min(state.questionCount, pool.length);
 
-  // Group by (category, type) for stratified sampling
+  // Stratified sampling: proportional picks from each (category, type) group
   const strata = new Map();
   for (const q of pool) {
     const key = q.category + '\0' + q.type;
@@ -193,13 +77,13 @@ function buildActiveQuestions() {
     strata.get(key).push(q);
   }
 
-  // Allocate counts proportionally, then distribute remainders by largest fraction
   const entries = [...strata.entries()].map(([key, items]) => ({
     key,
     items: shuffle(items),
     proportion: items.length / pool.length,
   }));
 
+  // Floor allocation, then distribute remainders by largest fractional part
   let allocated = 0;
   for (const e of entries) {
     e.count = Math.floor(e.proportion * target);
@@ -215,7 +99,6 @@ function buildActiveQuestions() {
     remaining--;
   }
 
-  // Sample from each stratum
   const selected = [];
   for (const e of entries) {
     selected.push(...e.items.slice(0, e.count));
@@ -227,47 +110,19 @@ function buildActiveQuestions() {
 function checkAnswer() {
   const q = state.activeQuestions[state.currentIndex];
   const selectedTexts = new Set(
-    [...state.selectedAnswers].map(letter => {
-      const ans = state.displayedAnswers.find(a => a.letter === letter);
-      return ans ? ans.text : null;
-    }).filter(Boolean)
+    [...state.selectedAnswers]
+      .map(letter => state.displayedAnswers.find(a => a.letter === letter)?.text)
+      .filter(Boolean)
   );
-
-  const correct = setsEqual(selectedTexts, q.correctTexts);
-  return correct;
+  return setsEqual(selectedTexts, q.correctTexts);
 }
 
-function setsEqual(a, b) {
-  if (a.size !== b.size) return false;
-  for (const v of a) if (!b.has(v)) return false;
-  return true;
-}
-
-// ===== UI HELPERS =====
-
-function $(id) { return document.getElementById(id); }
-
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  $(id).classList.add('active');
-}
-
-function showToast(msg, duration = 2500) {
-  const t = $('toast');
-  t.textContent = msg;
-  t.classList.add('visible');
-  setTimeout(() => t.classList.remove('visible'), duration);
-}
-
-// ===== RENDER START SCREEN =====
+// ===== SCREEN: START =====
 
 function renderStartScreen() {
-  const qs = state.allQuestions;
-  const parentCategories = [...new Set(qs.map(q => q.parentCategory))].filter(Boolean).sort();
-
+  const parentCategories = [...new Set(state.allQuestions.map(q => q.parentCategory))].filter(Boolean).sort();
   state.selectedParentCategory = parentCategories[0] || '';
 
-  // Test Type radio buttons
   const testTypeGroup = $('test-type-group');
   testTypeGroup.innerHTML = '';
   parentCategories.forEach((pc, idx) => {
@@ -296,15 +151,13 @@ function renderStartScreen() {
 function renderInfoLists() {
   const qs = state.allQuestions.filter(q => q.parentCategory === state.selectedParentCategory);
 
-  // Question types — compact inline display with counts
   const typeLabels = { multiplechoice: 'Multiple Choice', multipleresponse: 'Multiple Response', truefalse: 'True / False' };
   const typeOrder = ['multiplechoice', 'multipleresponse', 'truefalse'];
-  const typeParts = typeOrder
+  $('question-types-list').textContent = typeOrder
     .filter(t => qs.some(q => q.type === t))
-    .map(t => typeLabels[t]);
-  $('question-types-list').textContent = typeParts.join('  ·  ');
+    .map(t => typeLabels[t])
+    .join('  ·  ');
 
-  // Subcategories — compact comma list
   const cats = [...new Set(qs.map(q => q.category))].filter(Boolean).sort();
   $('subcategories-list').textContent = cats.join('  ·  ');
 }
@@ -314,7 +167,7 @@ function updateStartCount() {
   $('btn-start').disabled = available === 0;
 }
 
-// ===== RENDER QUIZ =====
+// ===== SCREEN: QUIZ =====
 
 function startQuiz() {
   buildActiveQuestions();
@@ -324,39 +177,27 @@ function startQuiz() {
     return;
   }
 
-  state.currentIndex = 0;
-  state.score = 0;
-  state.wrongQuestions = [];
-  state.wrongDetails = [];
-  state.answerLog = [];
-  state.answered = false;
-
+  resetQuizState(state.activeQuestions);
   showScreen('screen-quiz');
-
   renderQuestion();
 }
 
 function renderQuestion() {
   const q = state.activeQuestions[state.currentIndex];
   const total = state.activeQuestions.length;
-  const idx = state.currentIndex;
 
   state.selectedAnswers = new Set();
   state.answered = false;
 
-  // Progress
-  const pct = (idx / total) * 100;
-  $('progress-fill').style.width = pct + '%';
-  $('progress-label').textContent = `Question ${idx + 1} of ${total}`;
-  // Badges
-  $('category-badge').textContent = q.category;
-  const typeLabel = { multiplechoice: 'Single Select', multipleresponse: 'Select All That Apply', truefalse: 'True / False' };
-  $('type-badge').textContent = typeLabel[q.type] || q.type;
+  $('progress-fill').style.width = (state.currentIndex / total * 100) + '%';
+  $('progress-label').textContent = `Question ${state.currentIndex + 1} of ${total}`;
 
-  // Question
+  $('category-badge').textContent = q.category;
+  const typeLabels = { multiplechoice: 'Single Select', multipleresponse: 'Select All That Apply', truefalse: 'True / False' };
+  $('type-badge').textContent = typeLabels[q.type] || q.type;
+
   $('question-text').textContent = q.question;
 
-  // Multi-response hint
   const hint = $('multi-hint');
   if (q.type === 'multipleresponse') {
     const n = q.correctLetters.length;
@@ -366,13 +207,12 @@ function renderQuestion() {
     hint.style.display = 'none';
   }
 
-  // Prepare answers — shuffle when the question permits it
+  // Shuffle answers when allowed, then re-letter for display
   let answers = [...q.answers];
   if (q.randomAnswers && q.type !== 'truefalse') {
     answers = shuffle(answers);
   }
 
-  // Re-letter shuffled answers for display (A, B, C...)
   const displayLetters = ['A','B','C','D','E','F','G','H','I','J'];
   state.displayedAnswers = answers.map((a, i) => ({
     letter: displayLetters[i],
@@ -380,7 +220,6 @@ function renderQuestion() {
     originalLetter: a.letter,
   }));
 
-  // Render answer list
   const list = $('answers-list');
   list.innerHTML = '';
 
@@ -400,8 +239,8 @@ function renderQuestion() {
       </label>
     `;
 
-    const input = li.querySelector('input');
-    input.addEventListener('change', () => {
+    li.querySelector('input').addEventListener('change', () => {
+      const input = li.querySelector('input');
       if (q.type === 'multipleresponse') {
         if (input.checked) state.selectedAnswers.add(ans.letter);
         else state.selectedAnswers.delete(ans.letter);
@@ -424,10 +263,9 @@ function submitAnswer() {
   const q = state.activeQuestions[state.currentIndex];
   const isCorrect = checkAnswer();
 
-  const userSelections = [...state.selectedAnswers].map(letter => {
-    const ans = state.displayedAnswers.find(a => a.letter === letter);
-    return ans ? ans.text : '';
-  }).filter(Boolean);
+  const userSelections = [...state.selectedAnswers]
+    .map(letter => state.displayedAnswers.find(a => a.letter === letter)?.text)
+    .filter(Boolean);
 
   state.answerLog.push({
     question: q,
@@ -436,15 +274,7 @@ function submitAnswer() {
     isCorrect,
   });
 
-  if (isCorrect) {
-    state.score += q.points;
-  } else {
-    state.wrongQuestions.push(state.currentIndex);
-    state.wrongDetails.push({
-      question: q,
-      correctAnswers: [...q.correctTexts],
-    });
-  }
+  if (isCorrect) state.score += q.points;
 
   state.currentIndex++;
   if (state.currentIndex >= state.activeQuestions.length) {
@@ -454,38 +284,44 @@ function submitAnswer() {
   }
 }
 
-// ===== RENDER RESULTS =====
+// ===== SCREEN: RESULTS =====
+
+function scoreColor(pct) {
+  if (pct >= PASS_THRESHOLD) return 'var(--success)';
+  if (pct >= 60) return 'var(--warning)';
+  return 'var(--error)';
+}
 
 function renderResults() {
   const total = state.activeQuestions.length;
   const totalPts = state.activeQuestions.reduce((s, q) => s + q.points, 0);
   const pct = totalPts > 0 ? Math.round((state.score / totalPts) * 100) : 0;
-  const passed = pct >= 85;
+  const passed = pct >= PASS_THRESHOLD;
+  const wrongCount = state.answerLog.filter(e => !e.isCorrect).length;
 
   // Score ring
-  const r = 54;
-  const circ = 2 * Math.PI * r;
-  const fill = circ * (pct / 100);
+  const circ = 2 * Math.PI * 54;
   const ring = $('score-ring-fill');
   ring.style.strokeDasharray = circ;
-  ring.style.strokeDashoffset = circ - fill;
-  ring.style.stroke = passed ? 'var(--success)' : pct >= 60 ? 'var(--warning)' : 'var(--error)';
+  ring.style.strokeDashoffset = circ - circ * (pct / 100);
+  ring.style.stroke = scoreColor(pct);
 
   $('result-pct').textContent = pct + '%';
   $('result-score-detail').textContent = `${state.score} / ${totalPts} pts`;
   $('result-pass-badge').textContent = passed ? 'Pass' : 'Needs Work';
   $('result-pass-badge').className = 'pass-badge ' + (passed ? 'pass' : 'fail');
   $('result-wrong-count').textContent =
-    `${state.wrongQuestions.length} wrong · ${total - state.wrongQuestions.length} correct out of ${total} questions`;
-  const testLabel = state.selectedParentCategory || 'Practice';
-  $('result-threshold-note').textContent = `${testLabel} · 85% passing threshold`;
+    `${wrongCount} wrong · ${total - wrongCount} correct out of ${total} questions`;
 
-  // Category breakdown
+  const testLabel = state.selectedParentCategory || 'Practice';
+  $('result-threshold-note').textContent = `${testLabel} · ${PASS_THRESHOLD}% passing threshold`;
+
+  // Category breakdown — vertical bar chart
   const catMap = {};
   state.activeQuestions.forEach((q, i) => {
     if (!catMap[q.category]) catMap[q.category] = { correct: 0, total: 0 };
     catMap[q.category].total++;
-    if (!state.wrongQuestions.includes(i)) catMap[q.category].correct++;
+    if (state.answerLog[i]?.isCorrect) catMap[q.category].correct++;
   });
 
   const breakdown = $('breakdown-list');
@@ -495,7 +331,7 @@ function renderResults() {
     .sort(([a], [b]) => a.localeCompare(b))
     .forEach(([cat, { correct, total }]) => {
       const catPct = Math.round((correct / total) * 100);
-      const color = catPct >= 85 ? 'var(--success)' : catPct >= 60 ? 'var(--warning)' : 'var(--error)';
+      const color = scoreColor(catPct);
       breakdown.insertAdjacentHTML('beforeend', `
         <div class="bar-col">
           <span class="bar-pct" style="color:${color}">${catPct}%</span>
@@ -508,21 +344,24 @@ function renderResults() {
       `);
     });
 
-  $('btn-retry-wrong').disabled = state.wrongQuestions.length === 0;
-  $('btn-show-wrong').disabled = state.wrongQuestions.length === 0;
+  const hasWrong = wrongCount > 0;
+  $('btn-retry-wrong').disabled = !hasWrong;
+  $('btn-show-wrong').disabled = !hasWrong;
 
   showScreen('screen-results');
+}
+
+// ===== SCREEN: REVIEW =====
+
+function showAllAnswers() {
+  renderReviewList(`All Answers (${state.answerLog.length})`, state.answerLog);
+  showScreen('screen-wrong');
+  window.scrollTo(0, 0);
 }
 
 function showWrongQuestions() {
   const wrongEntries = state.answerLog.filter(e => !e.isCorrect);
   renderReviewList(`Incorrect Answers (${wrongEntries.length})`, wrongEntries);
-  showScreen('screen-wrong');
-  window.scrollTo(0, 0);
-}
-
-function showAllAnswers() {
-  renderReviewList(`All Answers (${state.answerLog.length})`, state.answerLog);
   showScreen('screen-wrong');
   window.scrollTo(0, 0);
 }
@@ -534,26 +373,25 @@ function renderReviewList(heading, entries) {
 
   entries.forEach((entry, idx) => {
     const { question: q, userSelections, correctAnswers, isCorrect } = entry;
-    const item = document.createElement('div');
-    item.className = 'review-item';
-
-    const statusIcon = isCorrect ? '✓' : '✗';
-    const statusClass = isCorrect ? 'correct' : 'incorrect';
+    const icon = isCorrect ? '✓' : '✗';
+    const cls = isCorrect ? 'correct' : 'incorrect';
 
     const userHtml = userSelections.length > 0
       ? userSelections.map(a =>
-          `<div class="review-user-ans ${statusClass}">${statusIcon} ${escapeHtml(a)}</div>`
+          `<div class="review-user-ans ${cls}">${icon} ${escapeHtml(a)}</div>`
         ).join('')
-      : '<div class="review-user-ans incorrect">— No answer (time expired)</div>';
+      : '<div class="review-user-ans incorrect">— No answer</div>';
 
     const correctHtml = correctAnswers
       .map(a => `<div class="review-correct-ans">✓ ${escapeHtml(a)}</div>`)
       .join('');
 
+    const item = document.createElement('div');
+    item.className = 'review-item';
     item.innerHTML = `
       <div class="review-q">
         <span class="review-q-num">${idx + 1}.</span>
-        <span class="review-status ${statusClass}">${statusIcon}</span>
+        <span class="review-status ${cls}">${icon}</span>
         ${escapeHtml(q.question)}
       </div>
       <div class="review-user-answers"><strong>Your answer:</strong>${userHtml}</div>
@@ -564,36 +402,24 @@ function renderReviewList(heading, entries) {
   });
 }
 
-function retakeSameTest() {
-  state.activeQuestions = shuffle([...state.activeQuestions]);
-  state.currentIndex = 0;
-  state.score = 0;
-  state.wrongQuestions = [];
-  state.wrongDetails = [];
-  state.answerLog = [];
-  state.answered = false;
-  showScreen('screen-quiz');
+// ===== QUIZ ACTIONS =====
 
+function retakeSameTest() {
+  resetQuizState(shuffle([...state.activeQuestions]));
+  showScreen('screen-quiz');
   renderQuestion();
 }
 
 function retryWrongQuestions() {
-  const wrong = state.wrongQuestions.map(i => state.activeQuestions[i]);
-  state.activeQuestions = shuffle(wrong);
-  state.currentIndex = 0;
-  state.score = 0;
-  state.wrongQuestions = [];
-  state.wrongDetails = [];
-  state.answerLog = [];
-  state.answered = false;
+  const wrongQuestions = state.answerLog.filter(e => !e.isCorrect).map(e => e.question);
+  resetQuizState(shuffle(wrongQuestions));
   showScreen('screen-quiz');
-
   renderQuestion();
 }
 
-// ===== CSV LOADING =====
+// ===== DATA LOADING =====
 
-function handleCSVText(text, filename) {
+function handleCSVText(text) {
   try {
     const questions = parseQuizCSV(text);
     if (questions.length === 0) {
@@ -612,8 +438,7 @@ async function tryAutoLoad() {
   try {
     const res = await fetch('./all_questions.csv');
     if (res.ok) {
-      const text = await res.text();
-      handleCSVText(text, 'all_questions.csv');
+      handleCSVText(await res.text());
       return;
     }
   } catch {
@@ -622,28 +447,16 @@ async function tryAutoLoad() {
   showScreen('screen-empty');
 }
 
-// ===== UTILS =====
-
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-// ===== INIT =====
+// ===== INITIALIZATION =====
 
 document.addEventListener('DOMContentLoaded', () => {
-
-  // Question count radios
+  // Config listeners
   $('question-count-group').addEventListener('change', e => {
     if (e.target.name === 'question-count') {
       state.questionCount = parseInt(e.target.value);
     }
   });
 
-  // Test type — single listener, set once, survives re-renders
   $('test-type-group').addEventListener('change', e => {
     if (e.target.name === 'test-type') {
       state.selectedParentCategory = e.target.value;
@@ -652,29 +465,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Start / quiz buttons
+  // Quiz
   $('btn-start').addEventListener('click', startQuiz);
   $('btn-submit').addEventListener('click', submitAnswer);
 
-  // Results actions
+  // Results
   $('btn-restart').addEventListener('click', () => renderStartScreen());
   $('btn-retake').addEventListener('click', retakeSameTest);
   $('btn-retry-wrong').addEventListener('click', retryWrongQuestions);
   $('btn-show-all').addEventListener('click', showAllAnswers);
   $('btn-show-wrong').addEventListener('click', showWrongQuestions);
+
+  // Review
   $('btn-back-results').addEventListener('click', () => showScreen('screen-results'));
   $('btn-print').addEventListener('click', () => window.print());
 
-  // Enter key triggers Submit
+  // Enter key submits during quiz
   document.addEventListener('keydown', e => {
     if (e.key !== 'Enter') return;
     if (!$('screen-quiz').classList.contains('active')) return;
-
-    if (!state.answered && state.selectedAnswers.size > 0) {
-      submitAnswer();
-    }
+    if (!state.answered && state.selectedAnswers.size > 0) submitAnswer();
   });
 
-  // Auto-load
   tryAutoLoad();
 });

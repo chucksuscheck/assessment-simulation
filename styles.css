@@ -58,8 +58,6 @@ body {
 
 .app-title span { color: var(--text-muted); font-weight: 400; }
 
-
-
 /* ===== CARD ===== */
 .card {
   background: var(--surface);
@@ -195,13 +193,6 @@ body {
   font-weight: 500;
 }
 
-.score-label {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-}
-
-.score-label strong { color: var(--text); }
-
 .progress-bar-wrap {
   height: 6px;
   background: var(--border);
@@ -317,53 +308,6 @@ body {
   color: white;
 }
 
-/* Correct/incorrect states after reveal */
-.answer-item.correct label {
-  border-color: var(--success);
-  background: var(--success-bg);
-}
-
-.answer-item.correct .answer-letter {
-  border-color: var(--success);
-  background: var(--success);
-  color: white;
-}
-
-.answer-item.incorrect label {
-  border-color: var(--error);
-  background: var(--error-bg);
-}
-
-.answer-item.incorrect .answer-letter {
-  border-color: var(--error);
-  background: var(--error);
-  color: white;
-}
-
-.answer-item.missed label {
-  border-color: var(--success);
-  background: var(--success-bg);
-  opacity: 0.7;
-}
-
-.answer-item.missed .answer-letter {
-  border-color: var(--success);
-  background: var(--success);
-  color: white;
-}
-
-.answer-item.disabled label { cursor: default; }
-.answer-item.disabled label:hover {
-  border-color: var(--border);
-  background: transparent;
-}
-.answer-item.correct.disabled label:hover,
-.answer-item.incorrect.disabled label:hover,
-.answer-item.missed.disabled label:hover {
-  border-color: inherit;
-  background: inherit;
-}
-
 /* Multi-response hint */
 .multi-hint {
   font-size: 0.8rem;
@@ -374,40 +318,6 @@ body {
   gap: 4px;
 }
 
-/* Feedback box */
-.feedback-box {
-  display: none;
-  padding: 16px;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  line-height: 1.6;
-}
-
-.feedback-box.correct {
-  background: var(--success-bg);
-  border: 1px solid var(--success-border);
-  color: #065f46;
-}
-
-.feedback-box.incorrect {
-  background: var(--error-bg);
-  border: 1px solid var(--error-border);
-  color: #991b1b;
-}
-
-.feedback-box.visible { display: block; margin-bottom: 20px; }
-
-.feedback-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  font-size: 1rem;
-}
-
-.feedback-icon { font-size: 1.2rem; }
-
 /* Quiz buttons */
 .quiz-actions {
   display: flex;
@@ -416,7 +326,7 @@ body {
   justify-content: flex-end;
 }
 
-.btn-submit, .btn-next {
+.btn-submit {
   padding: 10px 24px;
   border-radius: 8px;
   font-size: 0.95rem;
@@ -424,9 +334,6 @@ body {
   cursor: pointer;
   border: none;
   transition: background 0.15s, transform 0.1s;
-}
-
-.btn-submit {
   background: var(--accent);
   color: white;
 }
@@ -434,15 +341,6 @@ body {
 .btn-submit:hover { background: var(--accent-hover); }
 .btn-submit:active { transform: scale(0.97); }
 .btn-submit:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
-
-.btn-next {
-  background: var(--text);
-  color: white;
-}
-
-.btn-next:hover { background: #2d3748; }
-.btn-next:active { transform: scale(0.97); }
-
 
 /* ===== RESULTS SCREEN ===== */
 .results-hero {
@@ -821,6 +719,4 @@ body {
   .start-hero h1 { font-size: 1.5rem; }
   .score-ring { width: 120px; height: 120px; }
   .score-ring-text { font-size: 1.6rem; }
-  .breakdown-row { flex-wrap: wrap; }
-  .breakdown-bar-wrap { flex: 1 0 100%; order: 3; }
 }
