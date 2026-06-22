@@ -83,7 +83,6 @@
 
     <div class="quiz-meta">
       <span class="progress-label" id="progress-label">Question 1 of 0</span>
-      <span class="score-label" id="score-display">Score: <strong>0</strong></span>
     </div>
 
     <div class="progress-bar-wrap">
@@ -91,8 +90,6 @@
     </div>
 
     <div class="card">
-      <div class="feedback-box" id="feedback-box"></div>
-
       <div>
         <span class="category-badge" id="category-badge"></span>
         <span class="type-badge" id="type-badge"></span>
@@ -112,7 +109,6 @@
 
       <div class="quiz-actions">
         <button class="btn-submit" id="btn-submit" disabled>Submit</button>
-        <button class="btn-next" id="btn-next" style="display:none">Next →</button>
       </div>
     </div>
 
@@ -148,9 +144,11 @@
       </div>
 
       <div class="results-actions">
-        <button class="btn-restart" id="btn-restart">← New Assessment</button>
-        <button class="btn-retry-wrong" id="btn-retry-wrong">Retry Wrong Answers</button>
-        <button class="btn-show-wrong" id="btn-show-wrong">Show Wrong Questions</button>
+        <button class="btn-restart" id="btn-restart">New Test</button>
+        <button class="btn-retake" id="btn-retake">Retake Same Test</button>
+        <button class="btn-retry-wrong" id="btn-retry-wrong">Retake Incorrect</button>
+        <button class="btn-show-all" id="btn-show-all">Show All Answers</button>
+        <button class="btn-show-wrong" id="btn-show-wrong">Show Incorrect</button>
       </div>
     </div>
 
@@ -163,6 +161,7 @@
       <div id="review-list"></div>
       <div class="results-actions" style="margin-top:24px">
         <button class="btn-restart" id="btn-back-results">← Back to Results</button>
+        <button class="btn-print" id="btn-print">Print</button>
       </div>
     </div>
   </div>

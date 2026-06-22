@@ -167,6 +167,7 @@ const state = {
   selectedParentCategory: '',
   questionCount: 15,
   displayedAnswers: [],
+  answerLog: [],
 };
 
 // ===== QUIZ LOGIC =====
@@ -327,9 +328,11 @@ function startQuiz() {
   state.score = 0;
   state.wrongQuestions = [];
   state.wrongDetails = [];
+  state.answerLog = [];
   state.answered = false;
 
   showScreen('screen-quiz');
+
   renderQuestion();
 }
 
@@ -345,8 +348,6 @@ function renderQuestion() {
   const pct = (idx / total) * 100;
   $('progress-fill').style.width = pct + '%';
   $('progress-label').textContent = `Question ${idx + 1} of ${total}`;
-  $('score-display').innerHTML = `Score: <strong>${state.score}</strong>`;
-
   // Badges
   $('category-badge').textContent = q.category;
   const typeLabel = { multiplechoice: 'Single Select', multipleresponse: 'Select All That Apply', truefalse: 'True / False' };
@@ -413,13 +414,7 @@ function renderQuestion() {
     list.appendChild(li);
   });
 
-  // Hide feedback, reset buttons
-  const fb = $('feedback-box');
-  fb.className = 'feedback-box';
-
-  $('btn-submit').style.display = 'inline-flex';
   $('btn-submit').disabled = true;
-  $('btn-next').style.display = 'none';
 }
 
 function submitAnswer() {
@@ -428,6 +423,18 @@ function submitAnswer() {
 
   const q = state.activeQuestions[state.currentIndex];
   const isCorrect = checkAnswer();
+
+  const userSelections = [...state.selectedAnswers].map(letter => {
+    const ans = state.displayedAnswers.find(a => a.letter === letter);
+    return ans ? ans.text : '';
+  }).filter(Boolean);
+
+  state.answerLog.push({
+    question: q,
+    userSelections,
+    correctAnswers: [...q.correctTexts],
+    isCorrect,
+  });
 
   if (isCorrect) {
     state.score += q.points;
@@ -439,57 +446,6 @@ function submitAnswer() {
     });
   }
 
-  // Update score display
-  $('score-display').innerHTML = `Score: <strong>${state.score}</strong>`;
-
-  // Mark answers
-  const list = $('answers-list');
-  list.querySelectorAll('.answer-item').forEach(li => {
-    const letter = li.dataset.letter;
-    const ans = state.displayedAnswers.find(a => a.letter === letter);
-    const isCorrectAnswer = ans && q.correctTexts.has(ans.text);
-    const wasSelected = state.selectedAnswers.has(letter);
-
-    li.classList.add('disabled');
-
-    if (isCorrectAnswer && wasSelected) {
-      li.classList.add('correct');
-    } else if (!isCorrectAnswer && wasSelected) {
-      li.classList.add('incorrect');
-    } else if (isCorrectAnswer && !wasSelected) {
-      li.classList.add('missed');
-    }
-
-    const input = li.querySelector('input');
-    if (input) input.disabled = true;
-  });
-
-  // Feedback box
-  const fb = $('feedback-box');
-  fb.classList.add('visible', isCorrect ? 'correct' : 'incorrect');
-
-  const icon = isCorrect ? '✓' : '✗';
-  const title = isCorrect ? 'Correct!' : 'Incorrect';
-  const feedbackText = isCorrect
-    ? q.correctFeedback || 'Well done!'
-    : q.incorrectFeedback || 'Review the correct answer above.';
-
-  fb.innerHTML = `
-    <div class="feedback-header">
-      <span class="feedback-icon">${icon}</span>
-      <span>${title}</span>
-    </div>
-    <div>${escapeHtml(feedbackText)}</div>
-  `;
-
-  $('btn-submit').style.display = 'none';
-
-  const nextLabel = state.currentIndex + 1 >= state.activeQuestions.length ? 'See Results' : 'Next →';
-  $('btn-next').textContent = nextLabel;
-  $('btn-next').style.display = 'inline-flex';
-}
-
-function nextQuestion() {
   state.currentIndex++;
   if (state.currentIndex >= state.activeQuestions.length) {
     renderResults();
@@ -504,7 +460,7 @@ function renderResults() {
   const total = state.activeQuestions.length;
   const totalPts = state.activeQuestions.reduce((s, q) => s + q.points, 0);
   const pct = totalPts > 0 ? Math.round((state.score / totalPts) * 100) : 0;
-  const passed = pct >= 80;
+  const passed = pct >= 85;
 
   // Score ring
   const r = 54;
@@ -522,7 +478,7 @@ function renderResults() {
   $('result-wrong-count').textContent =
     `${state.wrongQuestions.length} wrong · ${total - state.wrongQuestions.length} correct out of ${total} questions`;
   const testLabel = state.selectedParentCategory || 'Practice';
-  $('result-threshold-note').textContent = `${testLabel} · 85% is a common passing threshold · 80% shown here as a guide`;
+  $('result-threshold-note').textContent = `${testLabel} · 85% passing threshold`;
 
   // Category breakdown
   const catMap = {};
@@ -534,19 +490,20 @@ function renderResults() {
 
   const breakdown = $('breakdown-list');
   breakdown.innerHTML = '';
+  breakdown.className = 'bar-chart';
   Object.entries(catMap)
-    .sort(([,a],[,b]) => (b.correct/b.total) - (a.correct/a.total))
+    .sort(([a], [b]) => a.localeCompare(b))
     .forEach(([cat, { correct, total }]) => {
       const catPct = Math.round((correct / total) * 100);
-      const color = catPct >= 80 ? 'var(--success)' : catPct >= 60 ? 'var(--warning)' : 'var(--error)';
+      const color = catPct >= 85 ? 'var(--success)' : catPct >= 60 ? 'var(--warning)' : 'var(--error)';
       breakdown.insertAdjacentHTML('beforeend', `
-        <div class="breakdown-row">
-          <span class="breakdown-label" title="${escapeHtml(cat)}">${escapeHtml(cat)}</span>
-          <div class="breakdown-bar-wrap">
-            <div class="breakdown-bar-fill" style="width:${catPct}%; background:${color}"></div>
+        <div class="bar-col">
+          <span class="bar-pct" style="color:${color}">${catPct}%</span>
+          <div class="bar-track">
+            <div class="bar-fill" style="height:${catPct}%; background:${color}"></div>
           </div>
-          <span class="breakdown-counts">${correct}/${total}</span>
-          <span class="breakdown-pct" style="color:${color}">${catPct}%</span>
+          <span class="bar-count">${correct}/${total}</span>
+          <span class="bar-label" title="${escapeHtml(cat)}">${escapeHtml(cat)}</span>
         </div>
       `);
     });
@@ -558,29 +515,64 @@ function renderResults() {
 }
 
 function showWrongQuestions() {
+  const wrongEntries = state.answerLog.filter(e => !e.isCorrect);
+  renderReviewList(`Incorrect Answers (${wrongEntries.length})`, wrongEntries);
+  showScreen('screen-wrong');
+}
+
+function showAllAnswers() {
+  renderReviewList(`All Answers (${state.answerLog.length})`, state.answerLog);
+  showScreen('screen-wrong');
+}
+
+function renderReviewList(heading, entries) {
   const reviewList = $('review-list');
   reviewList.innerHTML = '';
+  $('review-heading').textContent = heading;
 
-  $('review-heading').textContent = `Incorrect Answers (${state.wrongDetails.length})`;
-
-  state.wrongDetails.forEach((detail, idx) => {
-    const { question: q, correctAnswers } = detail;
+  entries.forEach((entry, idx) => {
+    const { question: q, userSelections, correctAnswers, isCorrect } = entry;
     const item = document.createElement('div');
     item.className = 'review-item';
+
+    const statusIcon = isCorrect ? '✓' : '✗';
+    const statusClass = isCorrect ? 'correct' : 'incorrect';
+
+    const userHtml = userSelections.length > 0
+      ? userSelections.map(a =>
+          `<div class="review-user-ans ${statusClass}">${statusIcon} ${escapeHtml(a)}</div>`
+        ).join('')
+      : '<div class="review-user-ans incorrect">— No answer (time expired)</div>';
 
     const correctHtml = correctAnswers
       .map(a => `<div class="review-correct-ans">✓ ${escapeHtml(a)}</div>`)
       .join('');
 
     item.innerHTML = `
-      <div class="review-q"><span class="review-q-num">${idx + 1}.</span>${escapeHtml(q.question)}</div>
-      <div class="review-correct-answers">${correctHtml}</div>
-      <div class="review-explanation">${escapeHtml(q.incorrectFeedback || '')}</div>
+      <div class="review-q">
+        <span class="review-q-num">${idx + 1}.</span>
+        <span class="review-status ${statusClass}">${statusIcon}</span>
+        ${escapeHtml(q.question)}
+      </div>
+      <div class="review-user-answers"><strong>Your answer:</strong>${userHtml}</div>
+      ${!isCorrect ? `<div class="review-correct-answers"><strong>Correct:</strong>${correctHtml}</div>` : ''}
+      ${!isCorrect && q.incorrectFeedback ? `<div class="review-explanation">${escapeHtml(q.incorrectFeedback)}</div>` : ''}
     `;
     reviewList.appendChild(item);
   });
+}
 
-  showScreen('screen-wrong');
+function retakeSameTest() {
+  state.activeQuestions = shuffle([...state.activeQuestions]);
+  state.currentIndex = 0;
+  state.score = 0;
+  state.wrongQuestions = [];
+  state.wrongDetails = [];
+  state.answerLog = [];
+  state.answered = false;
+  showScreen('screen-quiz');
+
+  renderQuestion();
 }
 
 function retryWrongQuestions() {
@@ -590,8 +582,10 @@ function retryWrongQuestions() {
   state.score = 0;
   state.wrongQuestions = [];
   state.wrongDetails = [];
+  state.answerLog = [];
   state.answered = false;
   showScreen('screen-quiz');
+
   renderQuestion();
 }
 
@@ -660,23 +654,23 @@ document.addEventListener('DOMContentLoaded', () => {
   // Start / quiz buttons
   $('btn-start').addEventListener('click', startQuiz);
   $('btn-submit').addEventListener('click', submitAnswer);
-  $('btn-next').addEventListener('click', nextQuestion);
 
   // Results actions
   $('btn-restart').addEventListener('click', () => renderStartScreen());
+  $('btn-retake').addEventListener('click', retakeSameTest);
   $('btn-retry-wrong').addEventListener('click', retryWrongQuestions);
+  $('btn-show-all').addEventListener('click', showAllAnswers);
   $('btn-show-wrong').addEventListener('click', showWrongQuestions);
   $('btn-back-results').addEventListener('click', () => showScreen('screen-results'));
+  $('btn-print').addEventListener('click', () => window.print());
 
-  // Enter key triggers Submit or Next
+  // Enter key triggers Submit
   document.addEventListener('keydown', e => {
     if (e.key !== 'Enter') return;
     if (!$('screen-quiz').classList.contains('active')) return;
 
     if (!state.answered && state.selectedAnswers.size > 0) {
       submitAnswer();
-    } else if (state.answered) {
-      nextQuestion();
     }
   });
 
