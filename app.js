@@ -201,7 +201,7 @@ function renderQuestion() {
   const hint = $('multi-hint');
   if (q.type === 'multipleresponse') {
     const n = q.correctLetters.length;
-    hint.textContent = `Select ${n} answer${n > 1 ? 's' : ''}.`;
+    hint.innerHTML = `Select <strong>${n}</strong> answer${n > 1 ? 's' : ''}.`;
     hint.style.display = 'flex';
   } else {
     hint.style.display = 'none';
