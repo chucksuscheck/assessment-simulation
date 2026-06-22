@@ -518,11 +518,13 @@ function showWrongQuestions() {
   const wrongEntries = state.answerLog.filter(e => !e.isCorrect);
   renderReviewList(`Incorrect Answers (${wrongEntries.length})`, wrongEntries);
   showScreen('screen-wrong');
+  window.scrollTo(0, 0);
 }
 
 function showAllAnswers() {
   renderReviewList(`All Answers (${state.answerLog.length})`, state.answerLog);
   showScreen('screen-wrong');
+  window.scrollTo(0, 0);
 }
 
 function renderReviewList(heading, entries) {
@@ -599,7 +601,6 @@ function handleCSVText(text, filename) {
       return;
     }
     state.allQuestions = questions;
-    showToast(`Loaded ${questions.length} questions from ${filename}`);
     renderStartScreen();
   } catch (e) {
     showToast('Failed to parse CSV. Check the format.');
