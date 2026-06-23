@@ -192,9 +192,7 @@ function renderQuestion() {
   $('progress-fill').style.width = (state.currentIndex / total * 100) + '%';
   $('progress-label').textContent = `Question ${state.currentIndex + 1} of ${total}`;
 
-  $('category-badge').textContent = q.category;
-  const typeLabels = { multiplechoice: 'Single Select', multipleresponse: 'Select All That Apply', truefalse: 'True / False' };
-  $('type-badge').textContent = typeLabels[q.type] || q.type;
+  $('category-badge').textContent = q.parentCategory;
 
   $('question-text').textContent = q.question;
 

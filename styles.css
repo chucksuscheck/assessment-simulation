@@ -33,7 +33,7 @@ body {
 #app {
   max-width: 760px;
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: 12px 16px;
 }
 
 .screen { display: none; }
@@ -44,9 +44,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 32px;
+  margin-bottom: 16px;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
 }
 
 .app-title {
@@ -63,27 +63,27 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 28px;
+  padding: 18px;
   box-shadow: var(--shadow);
 }
 
 /* ===== START SCREEN ===== */
 .start-hero {
   text-align: center;
-  padding: 40px 0 32px;
+  padding: 20px 0 16px;
 }
 
 .start-hero h1 {
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.03em;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .start-hero p {
   color: var(--text-muted);
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .app-branding {
@@ -104,7 +104,7 @@ body {
 }
 
 .config-section {
-  margin-top: 28px;
+  margin-top: 16px;
 }
 
 .config-section h3 {
@@ -113,15 +113,15 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 /* Radio option group */
 .radio-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 6px;
+  margin-top: 4px;
 }
 
 .radio-option {
@@ -138,10 +138,10 @@ body {
 
 .radio-option-label {
   display: block;
-  padding: 6px 18px;
+  padding: 4px 14px;
   border: 1.5px solid var(--border);
   border-radius: 100px;
-  font-size: 0.875rem;
+  font-size: 0.825rem;
   font-weight: 500;
   color: var(--text-muted);
   background: var(--surface);
@@ -178,8 +178,8 @@ body {
 .btn-start {
   display: block;
   width: 100%;
-  padding: 14px;
-  margin-top: 28px;
+  padding: 10px;
+  margin-top: 18px;
   background: var(--accent);
   color: white;
   border: none;
@@ -199,23 +199,23 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 4px;
 }
 
 .progress-label {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
   font-weight: 500;
 }
 
 .progress-bar-wrap {
-  height: 6px;
+  height: 4px;
   background: var(--border);
   border-radius: 100px;
   overflow: hidden;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .progress-bar-fill {
@@ -229,13 +229,13 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 10px;
+  padding: 2px 8px;
   background: var(--accent-light);
   color: var(--accent);
   border-radius: 100px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .type-badge {
@@ -253,11 +253,11 @@ body {
 }
 
 .question-text {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 500;
   color: var(--text);
-  line-height: 1.65;
-  margin-bottom: 24px;
+  line-height: 1.5;
+  margin-bottom: 14px;
 }
 
 /* Answer options */
@@ -265,8 +265,8 @@ body {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 24px;
+  gap: 6px;
+  margin-bottom: 14px;
 }
 
 .answer-item {
@@ -283,14 +283,14 @@ body {
 .answer-item label {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: 10px;
+  padding: 9px 12px;
   border: 1.5px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: 0.875rem;
+  line-height: 1.4;
 }
 
 .answer-item label:hover {
@@ -305,14 +305,14 @@ body {
 
 .answer-letter {
   flex-shrink: 0;
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1.5px solid var(--border);
-  border-radius: 6px;
-  font-size: 0.8rem;
+  border-radius: 5px;
+  font-size: 0.7rem;
   font-weight: 600;
   color: var(--text-muted);
   background: var(--bg);
@@ -327,9 +327,9 @@ body {
 
 /* Multi-response hint */
 .multi-hint {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -344,9 +344,9 @@ body {
 }
 
 .btn-submit {
-  padding: 10px 24px;
+  padding: 8px 20px;
   border-radius: 8px;
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   border: none;
@@ -362,13 +362,13 @@ body {
 /* ===== RESULTS SCREEN ===== */
 .results-hero {
   text-align: center;
-  padding: 32px 0 24px;
+  padding: 16px 0 12px;
 }
 
 .score-ring {
-  width: 140px;
-  height: 140px;
-  margin: 0 auto 20px;
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 12px;
   position: relative;
 }
 
@@ -396,7 +396,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
@@ -409,14 +409,15 @@ body {
 }
 
 .results-title {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .results-sub {
   color: var(--text-muted);
-  margin-bottom: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
 }
 
 .pass-badge {
@@ -434,7 +435,7 @@ body {
 
 /* Category breakdown */
 .breakdown-section {
-  margin-top: 28px;
+  margin-top: 16px;
 }
 
 .breakdown-section h3 {
@@ -443,13 +444,13 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);
-  margin-bottom: 14px;
+  margin-bottom: 8px;
 }
 
 .bar-chart {
   display: flex;
-  gap: 8px;
-  padding: 12px 0;
+  gap: 6px;
+  padding: 6px 0;
 }
 
 .bar-col {
@@ -469,7 +470,7 @@ body {
 .bar-track {
   width: 100%;
   max-width: 40px;
-  height: 160px;
+  height: 110px;
   background: var(--border);
   border-radius: 4px;
   display: flex;
@@ -503,17 +504,17 @@ body {
 /* Results actions */
 .results-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 28px;
+  gap: 8px;
+  margin-top: 16px;
   flex-wrap: wrap;
 }
 
 .btn-restart, .btn-retake, .btn-retry-wrong, .btn-show-all, .btn-show-wrong {
   flex: 1;
-  min-width: 120px;
-  padding: 12px;
+  min-width: 110px;
+  padding: 8px;
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 0.825rem;
   font-weight: 600;
   cursor: pointer;
   border: none;
@@ -538,10 +539,10 @@ body {
 /* ===== EMPTY / LOADING STATE ===== */
 .empty-state {
   text-align: center;
-  padding: 60px 20px;
+  padding: 32px 20px;
 }
 
-.empty-icon { font-size: 3rem; margin-bottom: 16px; }
+.empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
 
 .empty-state h2 {
   font-size: 1.25rem;
@@ -579,10 +580,10 @@ body {
 
 /* ===== WRONG ANSWERS REVIEW ===== */
 .review-item {
-  padding: 10px 0;
+  padding: 7px 0;
   border-bottom: 1px solid var(--border);
-  font-size: 0.82rem;
-  line-height: 1.45;
+  font-size: 0.78rem;
+  line-height: 1.35;
 }
 
 .review-item:last-child { border-bottom: none; }
@@ -645,8 +646,8 @@ body {
   border: 1.5px solid var(--border);
   color: var(--text);
   flex: 1;
-  min-width: 120px;
-  padding: 12px;
+  min-width: 110px;
+  padding: 8px;
   border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 600;
@@ -732,8 +733,8 @@ body {
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 520px) {
-  .card { padding: 20px; }
-  .start-hero h1 { font-size: 1.5rem; }
-  .score-ring { width: 120px; height: 120px; }
-  .score-ring-text { font-size: 1.6rem; }
+  .card { padding: 14px; }
+  .start-hero h1 { font-size: 1.3rem; }
+  .score-ring { width: 90px; height: 90px; }
+  .score-ring-text { font-size: 1.3rem; }
 }
